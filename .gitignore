@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv/
+venv/
+env.example
+
+# Docker
+*.log
+
+# SQLite / local data
+*.db
+/data/
+
+# OS
+.DS_Store

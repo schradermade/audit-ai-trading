@@ -1,0 +1,48 @@
+services:
+  mcp-audit:
+    build:
+      context: ..
+      dockerfile: apps/mcp-audit/Dockerfile
+    env_file:
+      - ../.env
+    ports:
+      - "8010:8010"
+    volumes:
+      - audit_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8010/health')"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  orchestrator:
+    build:
+      context: ..
+      dockerfile: apps/orchestrator/Dockerfile
+    env_file:
+      - ../.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      mcp-audit:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  audit_data:
