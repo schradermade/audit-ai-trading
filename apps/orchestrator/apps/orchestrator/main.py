@@ -4,6 +4,10 @@ from shared.schemas.audit import AuditEventType
 from .config import settings
 from .audit_client import AuditClient
 import uuid
+import requests
+
+
+RISK_MCP_URL = "http://risk-mcp:8020"
 
 app = FastAPI(title="AITDP Orchestrator", version="0.1.0")
 audit = AuditClient()
@@ -55,3 +59,24 @@ async def trade_recommendation(req: TradeRecommendationRequest, x_trace_id: str 
 
     decision_evt = await audit.log(trace_id, AuditEventType.DECISION_MADE, resp.model_dump(mode="json"))
     return resp.model_copy(update={"audit_id": decision_evt.audit_id})
+
+
+@app.post("/trade/decision")
+def trade_decision(payload: dict):
+    return call_risk_evaluate(payload)
+
+
+def call_risk_evaluate(payload: dict) -> dict:
+    try:
+        r = requests.post(
+            f"{RISK_MCP_URL}/evaluate",
+            json=payload,
+            timeout=5,
+        )
+        r.raise_for_status()
+        return r.json()
+    except requests.RequestException as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Risk MCP unavailable (fail-closed)",
+        ) from e
