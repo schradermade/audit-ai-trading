@@ -1,10 +1,14 @@
 from fastapi import FastAPI
 from datetime import datetime, timezone
 import requests
+import time
 
 from .policy_loader import load_policies
 
 AUDIT_MCP_URL = "http://audit-mcp:8010"
+
+class AuditWriteError(RuntimeError):
+    """Raised when an audit event cannot be persisted."""
 
 app = FastAPI()
 
@@ -52,31 +56,68 @@ def evaluate(payload: dict):
 
     _emit_audit(
         trace_id,
-        "policy_evaluated",
-        {"result": "pass"},
+        "decision_made",
+        {
+            "decision": "pass",
+            "reason": "policy_clear",
+        },
     )
 
     return {"result": "pass"}
 
 
-def _emit_audit(trace_id: str, event_type: str, payload: dict):
-    try:
-        r = requests.post(
-            f"{AUDIT_MCP_URL}/audit/log",
-            json={
-                "trace_id": trace_id,
-                "event_type": event_type,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-                "payload": payload,
-            },
-            timeout=2,
-        )
+def _emit_audit(
+    trace_id: str,
+    event_type: str,
+    payload: dict,
+    *,
+    retries: int = 3,
+    backoff_seconds: float = 0.5,
+):
+    last_error = None
 
-        if r.status_code >= 400:
-            print("[AUDIT ERROR]", r.status_code, r.text)
+    for attempt in range(1, retries + 1):
+        try:
+            r = requests.post(
+                f"{AUDIT_MCP_URL}/audit/log",
+                json={
+                    "trace_id": trace_id,
+                    "event_type": event_type,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "payload": payload,
+                },
+                timeout=2,
+            )
 
-        r.raise_for_status()
+            if r.status_code >= 400:
+                print(
+                    "[AUDIT ERROR]",
+                    {
+                        "status": r.status_code,
+                        "body": r.text,
+                        "attempt": attempt,
+                    },
+                )
 
-    except Exception as e:
-        print(f"[AUDIT EMIT FAILED] {e}")
+            r.raise_for_status()
 
+            # Success
+            return
+
+        except Exception as e:
+            last_error = e
+            print(
+                "[AUDIT RETRY FAILED]",
+                {
+                    "attempt": attempt,
+                    "error": str(e),
+                },
+            )
+
+            if attempt < retries:
+                time.sleep(backoff_seconds * attempt)
+
+    # Fail closed
+    raise AuditWriteError(
+        f"Failed to write audit event after {retries} attempts"
+    ) from last_error
