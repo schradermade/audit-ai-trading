@@ -17,7 +17,7 @@ The system consists of two main services:
 
 ```
 ┌─────────────┐         ┌──────────────┐
-│ Orchestrator│────────▶│  MCP Audit   │
+│ Orchestrator│────────▶│  Audit MCP   │
 │  (Port 8000)│         │  (Port 8010) │
 └─────────────┘         └──────────────┘
      │                         │
@@ -117,7 +117,7 @@ For local development without Docker:
    ```bash
    # Terminal 1: Start MCP Audit
    cd apps/audit-mcp
-   uvicorn apps.mcp_audit.main:app --port 8010
+   uvicorn apps.audit_mcp.main:app --port 8010
 
    # Terminal 2: Start Orchestrator
    cd apps/orchestrator
@@ -133,8 +133,8 @@ For local development without Docker:
 | `APP_ENV`               | Application environment   | `dev`                   | Both         |
 | `AUDIT_MCP_BASE_URL`    | Audit service URL         | `http://localhost:8010` | Orchestrator |
 | `ORCH_REQUIRE_TRACE_ID` | Require X-Trace-Id header | `true`                  | Orchestrator |
-| `AUDIT_DB_PATH`         | SQLite database path      | `/data/audit.db`        | MCP Audit    |
-| `AUDIT_HASH_CHAIN`      | Enable hash chain         | `true`                  | MCP Audit    |
+| `AUDIT_DB_PATH`         | SQLite database path      | `/data/audit.db`        | Audit MCP    |
+| `AUDIT_HASH_CHAIN`      | Enable hash chain         | `true`                  | Audit MCP    |
 
 ### Configuration Files
 
@@ -208,7 +208,7 @@ Submit a trade recommendation request.
 }
 ```
 
-### MCP Audit (Port 8010)
+### Audit MCP (Port 8010)
 
 #### `GET /health`
 

@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=none
 policies:
   - policy_id: RISK-POS-AAPL
     version: v1

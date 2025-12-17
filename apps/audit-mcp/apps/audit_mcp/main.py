@@ -3,7 +3,7 @@ from shared.schemas.audit import AuditWriteRequest, AuditWriteResponse, AuditEve
 from .config import settings
 from .storage import AuditStore
 
-app = FastAPI(title="AITDP MCP Audit Server", version="0.1.0")
+app = FastAPI(title="AITDP Audit MCP Server", version="0.1.0")
 store = AuditStore(db_path=settings.db_path, hash_chain=settings.hash_chain)
 
 @app.get("/health")

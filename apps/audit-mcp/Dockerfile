@@ -10,4 +10,4 @@ COPY apps/audit-mcp/apps /app/apps
 
 ENV PYTHONPATH=/app
 
-CMD ["uvicorn", "apps.audit-mcp.main:app", "--host", "0.0.0.0", "--port", "8010"]
+CMD ["uvicorn", "apps.audit_mcp.main:app", "--host", "0.0.0.0", "--port", "8010"]
