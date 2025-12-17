@@ -38,7 +38,7 @@ The system consists of two main services:
   - Integration with audit service for event logging
 - **Technology**: FastAPI, Pydantic v2
 
-#### 2. **MCP Audit** (`apps/mcp-audit/`)
+#### 2. **MCP Audit** (`apps/audit-mcp/`)
 
 - **Purpose**: Append-only audit log service
 - **Responsibilities**:
@@ -98,8 +98,8 @@ For local development without Docker:
    # Install orchestrator dependencies
    pip install -r apps/orchestrator/requirements.txt
 
-   # Install mcp-audit dependencies
-   pip install -r apps/mcp-audit/requirements.txt
+   # Install audit-mcp dependencies
+   pip install -r apps/audit-mcp/requirements.txt
    ```
 
 2. **Set environment variables**:
@@ -116,7 +116,7 @@ For local development without Docker:
 
    ```bash
    # Terminal 1: Start MCP Audit
-   cd apps/mcp-audit
+   cd apps/audit-mcp
    uvicorn apps.mcp_audit.main:app --port 8010
 
    # Terminal 2: Start Orchestrator
@@ -267,9 +267,9 @@ Retrieve all audit events for a given trace ID.
 ```
 audit-ai-trading/
 ├── apps/
-│   ├── mcp-audit/              # Audit logging service
+│   ├── audit-mcp/              # Audit logging service
 │   │   ├── apps/
-│   │   │   └── mcp_audit/
+│   │   │   └── audit-mcp/
 │   │   │       ├── main.py     # FastAPI application
 │   │   │       ├── config.py   # Configuration
 │   │   │       └── storage.py  # SQLite storage & hash chain

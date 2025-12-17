@@ -1,0 +1,12 @@
+policies:
+  - policy_id: RISK-POS-AAPL
+    version: v1
+    description: 'Maximum position size for AAPL equity trades'
+    scope:
+      desk: equities
+      symbol: AAPL
+    rule:
+      type: max_position
+      max_shares: 50000
+    enforcement: hard
+    effective_from: '2025-01-01T00:00:00Z'

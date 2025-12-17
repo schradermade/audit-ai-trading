@@ -31,14 +31,17 @@ AI is treated as **advisory**, not autonomous.
 ## Core principles
 
 1. **Audit-first**
+
    - Every request, decision, and enforcement step is recorded.
    - Audit is not a side effect; it is a prerequisite.
 
 2. **Policy over prompt**
+
    - Rules are enforced by deterministic systems, not model instructions.
    - AI cannot override policy.
 
 3. **Separation of concerns**
+
    - Intelligence (AI reasoning)
    - Authority (policy enforcement)
    - Evidence (audit record)
@@ -59,6 +62,7 @@ This project is structured as a **monorepo** containing multiple deployable serv
 ### Current services
 
 - **Orchestrator**
+
   - Entry point for decision requests
   - Coordinates workflow
   - Produces structured decision responses
@@ -91,11 +95,11 @@ This project is structured as a **monorepo** containing multiple deployable serv
 
 .
 ├── apps/
-│   ├── orchestrator/
-│   └── mcp-audit/
+│ ├── orchestrator/
+│ └── audit-mcp/
 ├── shared/
 ├── infra/
-│   └── docker-compose.yml
+│ └── docker-compose.yml
 ├── .env
 └── README.md
 
