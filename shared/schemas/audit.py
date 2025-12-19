@@ -7,6 +7,7 @@ class AuditEventType(str, Enum):
     REQUEST_RECEIVED = "request_received"
     DECISION_MADE = "decision_made"
     DECISION_FORWARDED = "decision_forwarded"
+    ADVISORY_GENERATED = "advisory_generated"
     ERROR = "error"
 
 class AuditEvent(BaseModel):

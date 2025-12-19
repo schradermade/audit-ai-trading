@@ -77,6 +77,16 @@ async def trade_decision(payload: dict):
     )
     
     risk_result = call_risk_evaluate(payload)
+    advisory = generate_advisory_stub(payload, risk_result)
+
+    await audit.log(
+        trace_id,
+        AuditEventType.ADVISORY_GENERATED,
+        {
+            "advisory": advisory,
+            "risk_result": risk_result
+        },
+    )
     
     decision = "reject" if risk_result.get("result") == "reject" else "proceed"
 
@@ -94,6 +104,17 @@ async def trade_decision(payload: dict):
         "trace_id": trace_id,
         "decision": decision,
         "risk": risk_result,
+    }
+
+def generate_advisory_stub(payload: dict, risk_result: dict) -> dict:
+    return {
+        "recommendation": "caution" if risk_result.get("result") == "reject" else "proceed",
+        "rationale": "Stub advisory: risk evaluation completed.",
+        "risk_flags": ["position_limit_check"],
+        "confidence": 0.5,
+        "suggested_next_steps": ["review_position_size"],
+        "model": "stub",
+        "model_version": "v0"
     }
 
 
