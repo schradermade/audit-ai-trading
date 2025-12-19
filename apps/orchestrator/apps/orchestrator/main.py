@@ -62,8 +62,39 @@ async def trade_recommendation(req: TradeRecommendationRequest, x_trace_id: str 
 
 
 @app.post("/trade/decision")
-def trade_decision(payload: dict):
-    return call_risk_evaluate(payload)
+async def trade_decision(payload: dict):
+    trace_id = payload["trace_id"]
+
+    await audit.log(
+        trace_id,
+        AuditEventType.REQUEST_RECEIVED,
+        {
+            "source": "orchestrator",
+            "actor": payload.get("actor"),
+            "trade": payload.get("trade"),
+            "as_of": payload.get("as_of"),
+        },
+    )
+    
+    risk_result = call_risk_evaluate(payload)
+    
+    decision = "reject" if risk_result.get("result") == "reject" else "proceed"
+
+    await audit.log(
+        trace_id,
+        AuditEventType.DECISION_FORWARDED,
+        {
+            "source": "orchestrator",
+            "decision": decision,
+            "risk_result": risk_result,
+        },
+    )
+    
+    return {
+        "trace_id": trace_id,
+        "decision": decision,
+        "risk": risk_result,
+    }
 
 
 def call_risk_evaluate(payload: dict) -> dict:

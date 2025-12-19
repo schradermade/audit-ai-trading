@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query
-from shared.schemas.audit import AuditWriteRequest, AuditWriteResponse, AuditEvent
+from shared.schemas.audit import AuditWriteRequest, AuditWriteResponse, AuditEvent, AuditEventType
 from .config import settings
 from .storage import AuditStore
 
