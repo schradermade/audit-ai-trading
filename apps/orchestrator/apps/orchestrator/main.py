@@ -6,8 +6,17 @@ from .audit_client import AuditClient
 import uuid
 import requests
 from .evals import run_advisory_evals
+from .claude_client import ClaudeClient
 
-RISK_MCP_URL = "http://risk-mcp:8020"
+RISK_MCP_BASE_URL = settings.risk_mcp_base_url
+
+# singleton Claude client
+claude: ClaudeClient | None = None
+try:
+    claude = ClaudeClient()
+except Exception:
+    claude = None
+
 
 app = FastAPI(title="AITDP Orchestrator", version="0.1.0")
 audit = AuditClient()
@@ -78,12 +87,34 @@ async def trade_decision(payload: dict, force_bad_advisory: bool = False):
     )
     
     risk_result = call_risk_evaluate(payload)
-    advisory = generate_advisory_stub(
-        payload,
-        risk_result,
-        force_bad=force_bad_advisory,
-    )
-    evals = run_advisory_evals(advisory, risk_result)
+
+    advisory = None
+    evals = None
+
+    try:
+        if claude is None:
+            raise RuntimeError("ClaudeClient not initialized")
+
+        advisory = await claude.generate_advisory(payload, risk_result)
+        evals = run_advisory_evals(advisory, risk_result)
+
+    except Exception as e:
+        # Advisory failure must never break policy enforcement
+        advisory = {
+            "recommendation": "caution",
+            "rationale": f"Advisory unavailable: {type(e).__name__}",
+            "risk_flags": ["advisory_error"],
+            "confidence": 0.0,
+            "suggested_next_steps": ["review_manually"],
+            "model": "claude",
+            "model_version": "error",
+        }
+        evals = {
+            "passed": False,
+            "checks": {},
+            "error": f"advisory_generation_failed: {type(e).__name__}: {e}",
+        }
+
 
     await audit.log(
         trace_id,
@@ -147,7 +178,7 @@ def generate_advisory_stub(
 def call_risk_evaluate(payload: dict) -> dict:
     try:
         r = requests.post(
-            f"{RISK_MCP_URL}/evaluate",
+            f"{RISK_MCP_BASE_URL}/evaluate",
             json=payload,
             timeout=5,
         )
