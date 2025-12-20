@@ -5,7 +5,7 @@ from .config import settings
 from .audit_client import AuditClient
 import uuid
 import requests
-
+from .evals import run_advisory_evals
 
 RISK_MCP_URL = "http://risk-mcp:8020"
 
@@ -78,13 +78,16 @@ async def trade_decision(payload: dict):
     
     risk_result = call_risk_evaluate(payload)
     advisory = generate_advisory_stub(payload, risk_result)
+    evals = run_advisory_evals(advisory, risk_result)
 
     await audit.log(
         trace_id,
         AuditEventType.ADVISORY_GENERATED,
         {
             "advisory": advisory,
-            "risk_result": risk_result
+            "risk_result": risk_result,
+            "evals": evals,
+            "advisory_used": False,  # advisory is not authoritative (yet)
         },
     )
     
