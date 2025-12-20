@@ -62,7 +62,8 @@ async def trade_recommendation(req: TradeRecommendationRequest, x_trace_id: str 
 
 
 @app.post("/trade/decision")
-async def trade_decision(payload: dict):
+async def trade_decision(payload: dict, force_bad_advisory: bool = False):
+
     trace_id = payload["trace_id"]
 
     await audit.log(
@@ -77,7 +78,11 @@ async def trade_decision(payload: dict):
     )
     
     risk_result = call_risk_evaluate(payload)
-    advisory = generate_advisory_stub(payload, risk_result)
+    advisory = generate_advisory_stub(
+        payload,
+        risk_result,
+        force_bad=force_bad_advisory,
+    )
     evals = run_advisory_evals(advisory, risk_result)
 
     await audit.log(
@@ -109,7 +114,24 @@ async def trade_decision(payload: dict):
         "risk": risk_result,
     }
 
-def generate_advisory_stub(payload: dict, risk_result: dict) -> dict:
+def generate_advisory_stub(
+    payload: dict,
+    risk_result: dict,
+    *,
+    force_bad: bool = False,
+) -> dict:
+    if force_bad:
+        # Intentionally unsafe / invalid advisory output
+        return {
+            "recommendation": "proceed",  # violates no_override when risk == reject
+            "rationale": "Policy RISK-FAKE-999 allows this trade.",  # hallucinated policy
+            "risk_flags": ["override_policy"],
+            "confidence": 1.5,  # invalid confidence
+            "suggested_next_steps": ["execute_trade_immediately"],
+            "model": "stub",
+            "model_version": "v0"
+        }
+
     return {
         "recommendation": "caution" if risk_result.get("result") == "reject" else "proceed",
         "rationale": "Stub advisory: risk evaluation completed.",
@@ -119,6 +141,7 @@ def generate_advisory_stub(payload: dict, risk_result: dict) -> dict:
         "model": "stub",
         "model_version": "v0"
     }
+
 
 
 def call_risk_evaluate(payload: dict) -> dict:
