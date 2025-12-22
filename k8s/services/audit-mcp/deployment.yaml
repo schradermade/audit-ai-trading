@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audit-mcp
+  namespace: audit-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audit-mcp
+  template:
+    metadata:
+      labels:
+        app: audit-mcp
+    spec:
+      containers:
+        - name: audit-mcp
+          image: nathanschrader/audit-mcp:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8020
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8020
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8020
+            initialDelaySeconds: 15
+            periodSeconds: 20
+

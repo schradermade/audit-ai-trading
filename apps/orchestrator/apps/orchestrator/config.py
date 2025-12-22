@@ -3,8 +3,16 @@ import os
 
 class Settings(BaseModel):
     app_env: str = os.getenv("APP_ENV", "dev")
-    audit_mcp_base_url: str = os.getenv("AUDIT_MCP_BASE_URL", "http://audit-mcp:8010")
-    risk_mcp_base_url: str = os.getenv("RISK_MCP_BASE_URL", "http://risk-mcp:8020")
+    audit_mcp_base_url: str = os.getenv(
+        "AUDIT_MCP_BASE_URL",
+        "http://audit-mcp"
+    )
+
+    risk_mcp_base_url: str = os.getenv(
+        "RISK_MCP_BASE_URL",
+        "http://risk-mcp"
+    )
+
     
     require_trace_id: bool = os.getenv("ORCH_REQUIRE_TRACE_ID", "true").lower() == "true"
     anthropic_api_key: str | None = os.getenv("ANTHROPIC_API_KEY")

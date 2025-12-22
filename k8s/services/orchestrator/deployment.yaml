@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+  namespace: audit-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+    spec:
+      containers:
+        - name: orchestrator
+          image: schradermade/orchestrator:0.1.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8020
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8020
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8020
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          env:
+            - name: AUDIT_MCP_BASE_URL
+              value: "http://audit-mcp"
+            - name: RISK_MCP_BASE_URL
+              value: "http://risk-mcp"
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-secrets
+                  key: ANTHROPIC_API_KEY
+
+            - name: CLAUDE_PRIMARY_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-secrets
+                  key: CLAUDE_PRIMARY_MODEL

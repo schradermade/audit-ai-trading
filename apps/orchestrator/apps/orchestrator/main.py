@@ -10,12 +10,16 @@ from .claude_client import ClaudeClient
 
 RISK_MCP_BASE_URL = settings.risk_mcp_base_url
 
-# singleton Claude client
 claude: ClaudeClient | None = None
-try:
-    claude = ClaudeClient()
-except Exception:
-    claude = None
+
+
+def get_claude() -> ClaudeClient:
+    global claude
+
+    if claude is None:
+        claude = ClaudeClient()  # reads env vars NOW, not at import
+
+    return claude
 
 
 app = FastAPI(title="AITDP Orchestrator", version="0.1.0")
@@ -92,28 +96,19 @@ async def trade_decision(payload: dict, force_bad_advisory: bool = False):
     evals = None
 
     try:
-        if claude is None:
-            raise RuntimeError("ClaudeClient not initialized")
-
-        advisory = await claude.generate_advisory(payload, risk_result)
+        client = get_claude()
+        advisory = await client.generate_advisory(payload, risk_result)
         evals = run_advisory_evals(advisory, risk_result)
 
     except Exception as e:
-        # Advisory failure must never break policy enforcement
-        advisory = {
-            "recommendation": "caution",
-            "rationale": f"Advisory unavailable: {type(e).__name__}",
-            "risk_flags": ["advisory_error"],
-            "confidence": 0.0,
-            "suggested_next_steps": ["review_manually"],
-            "model": "claude",
-            "model_version": "error",
-        }
-        evals = {
-            "passed": False,
-            "checks": {},
-            "error": f"advisory_generation_failed: {type(e).__name__}: {e}",
-        }
+        await audit.log(
+            trace_id,
+            AuditEventType.ADVISORY_FAILED,
+            {
+                "error_type": type(e).__name__,
+                "error": str(e),
+            },
+        )
 
 
     await audit.log(

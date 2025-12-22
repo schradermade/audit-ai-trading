@@ -2,10 +2,11 @@ from fastapi import FastAPI
 from datetime import datetime, timezone
 import requests
 import time
+import os
 
 from .policy_loader import load_policies
 
-AUDIT_MCP_URL = "http://audit-mcp:8010"
+AUDIT_MCP_BASE_URL = os.getenv("AUDIT_MCP_BASE_URL", "http://audit-mcp")
 
 class AuditWriteError(RuntimeError):
     """Raised when an audit event cannot be persisted."""
@@ -79,7 +80,7 @@ def _emit_audit(
     for attempt in range(1, retries + 1):
         try:
             r = requests.post(
-                f"{AUDIT_MCP_URL}/audit/log",
+                f"{AUDIT_MCP_BASE_URL}/audit/log",
                 json={
                     "trace_id": trace_id,
                     "event_type": event_type,
