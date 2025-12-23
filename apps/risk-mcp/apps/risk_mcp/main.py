@@ -3,15 +3,15 @@ from datetime import datetime, timezone
 import requests
 import time
 import os
-
 from .policy_loader import load_policies
+from .config import settings
 
 AUDIT_MCP_BASE_URL = os.getenv("AUDIT_MCP_BASE_URL", "http://audit-mcp")
 
 class AuditWriteError(RuntimeError):
     """Raised when an audit event cannot be persisted."""
 
-app = FastAPI()
+app = FastAPI(title="AITDP Risk MCP Server", version=settings.app_version)
 
 
 @app.get("/health")

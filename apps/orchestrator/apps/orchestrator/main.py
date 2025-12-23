@@ -10,9 +10,10 @@ from .claude_client import ClaudeClient
 
 RISK_MCP_BASE_URL = settings.risk_mcp_base_url
 
+app = FastAPI(title="AITDP Orchestrator", version=settings.app_version)
+audit = AuditClient()
+
 claude: ClaudeClient | None = None
-
-
 def get_claude() -> ClaudeClient:
     global claude
 
@@ -22,12 +23,9 @@ def get_claude() -> ClaudeClient:
     return claude
 
 
-app = FastAPI(title="AITDP Orchestrator", version="0.1.0")
-audit = AuditClient()
-
 @app.get("/health")
 async def health():
-    return {"status": "ok", "env": settings.app_env}
+    return {"status": "ok", "env": settings.app_env, "service": "orchestrator"}
 
 def require_trace_id(x_trace_id: str | None) -> str:
     if settings.require_trace_id and not x_trace_id:

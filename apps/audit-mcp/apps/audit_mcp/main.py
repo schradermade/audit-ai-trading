@@ -3,12 +3,14 @@ from shared.schemas.audit import AuditWriteRequest, AuditWriteResponse, AuditEve
 from .config import settings
 from .storage import AuditStore
 
-app = FastAPI(title="AITDP Audit MCP Server", version="0.1.0")
+
+app = FastAPI(title="AITDP Audit MCP Server", version=settings.app_version)
+
 store = AuditStore(db_path=settings.db_path, hash_chain=settings.hash_chain)
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "env": settings.app_env, "hash_chain": settings.hash_chain}
+    return {"status": "ok", "env": settings.app_env, "hash_chain": settings.hash_chain, "service": "audit-mcp"}
 
 @app.post("/audit/log", response_model=AuditWriteResponse)
 async def log_event(req: AuditWriteRequest):

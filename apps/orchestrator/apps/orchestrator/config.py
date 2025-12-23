@@ -1,29 +1,46 @@
 from pydantic import BaseModel
-import os
+from shared.config_utils import get_env
 
 class Settings(BaseModel):
-    app_env: str = os.getenv("APP_ENV", "dev")
-    audit_mcp_base_url: str = os.getenv(
+    app_env: str = get_env(
+        "APP_ENV", 
+        "dev"
+    )
+    
+    app_version: str = get_env(
+        "APP_VERSION", 
+        "dev"
+    )
+
+    audit_mcp_base_url: str = get_env(
         "AUDIT_MCP_BASE_URL",
         "http://audit-mcp"
     )
 
-    risk_mcp_base_url: str = os.getenv(
+    risk_mcp_base_url: str = get_env(
         "RISK_MCP_BASE_URL",
         "http://risk-mcp"
     )
 
     
-    require_trace_id: bool = os.getenv("ORCH_REQUIRE_TRACE_ID", "true").lower() == "true"
-    anthropic_api_key: str | None = os.getenv("ANTHROPIC_API_KEY")
-    claude_primary_model: str = os.getenv(
+    require_trace_id: bool = get_env(
+        "ORCH_REQUIRE_TRACE_ID", 
+        "true"
+    ).lower() == "true"
+    
+    anthropic_api_key: str | None = get_env(
+        "ANTHROPIC_API_KEY"
+    )
+
+    claude_primary_model: str = get_env(
         "CLAUDE_PRIMARY_MODEL",
         "claude-3-haiku-20240307"
     )
 
-    claude_fallback_model: str = os.getenv(
+    claude_fallback_model: str = get_env(
         "CLAUDE_FALLBACK_MODEL",
         "claude-3-5-haiku-20241022"
     )
     
 settings = Settings()
+
