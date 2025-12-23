@@ -15,5 +15,6 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY shared /app/shared
 COPY apps/risk-mcp/apps /app/apps
+COPY policies /app/policies
 
 CMD ["uvicorn", "apps.risk_mcp.main:app", "--host", "0.0.0.0", "--port", "8020"]
