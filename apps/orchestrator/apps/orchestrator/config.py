@@ -14,12 +14,12 @@ class Settings(BaseModel):
 
     audit_mcp_base_url: str = get_env(
         "AUDIT_MCP_BASE_URL",
-        "http://audit-mcp"
+        "http://audit-mcp:8020"
     )
 
     risk_mcp_base_url: str = get_env(
         "RISK_MCP_BASE_URL",
-        "http://risk-mcp"
+        "http://risk-mcp:8020"
     )
 
     
