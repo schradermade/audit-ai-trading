@@ -10,7 +10,13 @@ store = AuditStore(db_path=settings.db_path, hash_chain=settings.hash_chain)
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "env": settings.app_env, "hash_chain": settings.hash_chain, "service": "audit-mcp"}
+    return {
+        "service": "audit-mcp",
+        "version": settings.app_version,
+        "status": "ok",
+        "env": settings.app_env,
+        "hash_chain": settings.hash_chain
+    }
 
 @app.post("/audit/log", response_model=AuditWriteResponse)
 async def log_event(req: AuditWriteRequest):

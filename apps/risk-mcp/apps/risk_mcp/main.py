@@ -15,7 +15,12 @@ app = FastAPI(title="AITDP Risk MCP Server", version=settings.app_version)
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "risk-mcp"}
+    return {
+        "service": "risk-mcp",
+        "version": settings.app_version,
+        "status": "ok",
+        "env": settings.app_env
+    }
 
 
 @app.post("/evaluate")

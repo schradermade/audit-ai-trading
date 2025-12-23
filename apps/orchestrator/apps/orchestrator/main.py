@@ -25,7 +25,12 @@ def get_claude() -> ClaudeClient:
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "env": settings.app_env, "service": "orchestrator"}
+    return {
+        "service": "orchestrator",
+        "version": settings.app_version,
+        "status": "ok",
+        "env": settings.app_env
+    }
 
 def require_trace_id(x_trace_id: str | None) -> str:
     if settings.require_trace_id and not x_trace_id:
