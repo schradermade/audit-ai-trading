@@ -6,7 +6,6 @@ import os
 from .policy_loader import load_policies
 from .config import settings
 
-AUDIT_MCP_BASE_URL = os.getenv("AUDIT_MCP_BASE_URL", "http://audit-mcp")
 
 class AuditWriteError(RuntimeError):
     """Raised when an audit event cannot be persisted."""
@@ -80,7 +79,7 @@ def _emit_audit(
     for attempt in range(1, retries + 1):
         try:
             r = requests.post(
-                f"{AUDIT_MCP_BASE_URL}/audit/log",
+                f"{settings.audit_mcp_base_url}/audit/log",
                 json={
                     "trace_id": trace_id,
                     "event_type": event_type,
