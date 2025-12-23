@@ -13,7 +13,7 @@ class Settings:
 
     audit_mcp_base_url: str = get_env(
       "AUDIT_MCP_BASE_URL", 
-      "http://audit-mcp"
+      "http://audit-mcp:8020"
     )
 
 settings = Settings()
