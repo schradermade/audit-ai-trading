@@ -44,6 +44,8 @@ services:
     build:
       context: .
       dockerfile: apps/risk-mcp/Dockerfile
+    env_file:
+      - .env
     ports:
       - 8020:8020
     depends_on:
@@ -57,6 +59,36 @@ services:
         - import urllib.request;
           urllib.request.urlopen('http://localhost:8020/health')
       interval: 5s
+      timeout: 3s
+      retries: 20
+  control-center:
+    build:
+      context: apps/control-center
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+      - ORCHESTRATOR_URL=http://orchestrator:8000
+      - AUDIT_MCP_URL=http://audit-mcp:8010
+      - RISK_MCP_URL=http://risk-mcp:8020
+      - NEXT_PUBLIC_APP_ENV=dev
+      - NEXT_PUBLIC_APP_VERSION=0.1.0
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+      audit-mcp:
+        condition: service_healthy
+      risk-mcp:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - --no-verbose
+        - --tries=1
+        - --spider
+        - http://localhost:3000/
+      interval: 10s
       timeout: 3s
       retries: 20
 volumes:
